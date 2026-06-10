@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Presupuestos PRO - VIP Instalaciones</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f5f7fa;
+}
+
+header{
+background:#0F4C81;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.container{
+max-width:1200px;
+margin:auto;
+padding:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+margin-bottom:20px;
+border-radius:15px;
+box-shadow:0 3px 10px rgba(0,0,0,.1);
+}
+
+label{
+display:block;
+font-weight:bold;
+margin-top:10px;
+}
+
+input, textarea, select{
+width:100%;
+padding:10px;
+margin-top:5px;
+border:1px solid #ccc;
+border-radius:8px;
+}
+
+textarea{
+height:100px;
+}
+
+button{
+padding:12px 20px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin-top:15px;
+margin-right:10px;
+}
+
+.guardar{
+background:#0F4C81;
+color:white;
+}
+
+.pdf{
+background:green;
+color:white;
+}
+
+.factura{
+background:#ff9800;
+color:white;
+}
+
+.total{
+font-size:28px;
+font-weight:bold;
+color:green;
+margin-top:15px;
+}
+
+canvas{
+border:1px solid #ccc;
+width:100%;
+max-width:700px;
+height:220px;
+background:white;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+<h1>💰 PRESUPUESTOS PRO</h1>
+
+<h3>VIP INSTALACIONES</h3>
+
+<p>
+☎ 673 08 67 10<br>
+✉ hola@vipinstalaciones.es<br>
+📍 Calle Ferrers 6
+</p>
+
+<br>
+
+<button onclick="location.href='index.html'">
+🏠 Inicio
+</button>
+
+</header>
+
+<div class="container">
+
+<div class="card">
+
+<h2 id="codigo"></h2>
+
+<label>Cliente</label>
+<input type="text" id="cliente">
+
+<label>Dirección</label>
+<input type="text" id="direccion">
+
+<label>Teléfono</label>
+<input type="text" id="telefono">
+
+<label>Descripción del trabajo</label>
+<textarea id="descripcion"></textarea>
+
+<label>Materiales (€)</label>
+<input
+type="number"
+id="materiales"
+oninput="calcularTotal()">
+
+<label>Mano de Obra (€)</label>
+<input
+type="number"
+id="manoobra"
+oninput="calcularTotal()">
+
+<label>IVA (%)</label>
+<input
+type="number"
+id="iva"
+value="21"
+oninput="calcularTotal()">
+
+<div id="subtotal"></div>
+<div id="ivaTotal"></div>
+
+<div class="total" id="total">
+TOTAL: 0 €
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>✍ Firma Cliente</h3>
+
+<canvas
+id="firma"
+width="700"
+height="220">
+</canvas>
+
+<br>
+
+<button onclick="limpiarFirma()">
+Borrar Firma
+</button>
+
+</div>
+
+<div class="card">
+
+<button
+class="guardar"
+onclick="guardarPresupuesto()">
+
+💾 Guardar
+
+</button>
+
+<button
+class="pdf">
+
+📄 PDF
+
+</button>
+
+<button
+class="factura">
+
+🧾 Convertir a Factura
+
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+let presupuestos =
+JSON.parse(
+localStorage.getItem("presupuestosPro")
+) || [];
+
+let numero =
+presupuestos.length + 1;
+
+let codigo =
+"PRES-2025-" +
+String(numero).padStart(3,"0");
+
+document
+.getElementById("codigo")
+.innerHTML =
+"Presupuesto Nº " + codigo;
+
+function calcularTotal(){
+
+let materiales =
+parseFloat(
+document.getElementById(
+"materiales"
+).value
+) || 0;
+
+let manoobra =
+parseFloat(
+document.getElementById(
+"manoobra"
+).value
+) || 0;
+
+let iva =
+parseFloat(
+document.getElementById(
+"iva"
+).value
+) || 0;
+
+let subtotal =
+materiales + manoobra;
+
+let ivaTotal =
+subtotal * iva / 100;
+
+let total =
+subtotal + ivaTotal;
+
+document
+.getElementById("subtotal")
+.innerHTML =
+"Subtotal: " +
+subtotal.toFixed(2) + " €";
+
+document
+.getElementById("ivaTotal")
+.innerHTML =
+"IVA: " +
+ivaTotal.toFixed(2) + " €";
+
+document
+.getElementById("total")
+.innerHTML =
+"TOTAL: " +
+total.toFixed(2) + " €";
+
+}
+
+function guardarPresupuesto(){
+
+alert(
+"Presupuesto guardado correctamente"
+);
+
+}
+
+const canvas =
+document.getElementById("firma");
+
+const ctx =
+canvas.getContext("2d");
+
+let dibujando=false;
+
+canvas.addEventListener(
+"mousedown",
+e=>{
+
+dibujando=true;
+
+ctx.beginPath();
+
+ctx.moveTo(
+e.offsetX,
+e.offsetY
+);
+
+}
+);
+
+canvas.addEventListener(
+"mousemove",
+e=>{
+
+if(!dibujando) return;
+
+ctx.lineTo(
+e.offsetX,
+e.offsetY
+);
+
+ctx.stroke();
+
+}
+);
+
+canvas.addEventListener(
+"mouseup",
+()=>{
+
+dibujando=false;
+
+}
+);
+
+function limpiarFirma(){
+
+ctx.clearRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+}
+
+</script>
+
+</body>
+</html>

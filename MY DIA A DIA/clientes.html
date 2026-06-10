@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Clientes</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f5f7fa;
+margin:0;
+}
+
+header{
+background:#0F4C81;
+color:white;
+padding:15px;
+text-align:center;
+}
+
+.container{
+padding:20px;
+}
+
+input, textarea{
+width:100%;
+padding:10px;
+margin-bottom:10px;
+border:1px solid #ccc;
+border-radius:8px;
+}
+
+button{
+padding:10px 15px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+}
+
+.guardar{
+background:#0F4C81;
+color:white;
+}
+
+.buscar{
+margin-bottom:15px;
+}
+
+.cliente{
+background:white;
+padding:15px;
+margin-bottom:10px;
+border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+
+.acciones{
+margin-top:10px;
+}
+
+.editar{
+background:orange;
+color:white;
+}
+
+.borrar{
+background:red;
+color:white;
+}
+
+.volver{
+background:#333;
+color:white;
+margin-bottom:20px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>👥 Clientes</h1>
+</header>
+
+<div class="container">
+
+<button
+class="volver"
+onclick="location.href='index.html'">
+🏠 Volver al Inicio
+</button>
+
+<input
+class="buscar"
+id="buscar"
+placeholder="Buscar cliente..."
+onkeyup="buscarCliente()">
+
+<input
+id="nombre"
+placeholder="Nombre">
+
+<input
+id="telefono"
+placeholder="Teléfono">
+
+<input
+id="direccion"
+placeholder="Dirección">
+
+<textarea
+id="observaciones"
+placeholder="Observaciones">
+</textarea>
+
+<button
+class="guardar"
+onclick="guardarCliente()">
+Guardar Cliente
+</button>
+
+<hr>
+
+<div id="listaClientes"></div>
+
+</div>
+
+<script>
+
+let clientes =
+JSON.parse(localStorage.getItem("clientes"))
+|| [];
+
+let editando = -1;
+
+mostrarClientes();
+
+function guardarCliente(){
+
+let nombre =
+document.getElementById("nombre").value;
+
+let telefono =
+document.getElementById("telefono").value;
+
+let direccion =
+document.getElementById("direccion").value;
+
+let observaciones =
+document.getElementById("observaciones").value;
+
+if(nombre===""){
+alert("Introduce un nombre");
+return;
+}
+
+let cliente = {
+nombre,
+telefono,
+direccion,
+observaciones
+};
+
+if(editando >= 0){
+
+clientes[editando] = cliente;
+editando = -1;
+
+}else{
+
+clientes.push(cliente);
+
+}
+
+localStorage.setItem(
+"clientes",
+JSON.stringify(clientes)
+);
+
+limpiarFormulario();
+
+mostrarClientes();
+
+}
+
+function mostrarClientes(){
+
+let lista =
+document.getElementById("listaClientes");
+
+lista.innerHTML = "";
+
+clientes.forEach((cliente,index)=>{
+
+lista.innerHTML += `
+<div class="cliente">
+
+<strong>${cliente.nombre}</strong><br>
+
+📞 ${cliente.telefono}<br>
+
+📍 ${cliente.direccion}<br>
+
+📝 ${cliente.observaciones}
+
+<div class="acciones">
+
+<button
+class="editar"
+onclick="editarCliente(${index})">
+Editar
+</button>
+
+<button
+class="borrar"
+onclick="borrarCliente(${index})">
+Borrar
+</button>
+
+</div>
+
+</div>
+`;
+
+});
+
+}
+
+function editarCliente(index){
+
+let cliente = clientes[index];
+
+document.getElementById("nombre").value =
+cliente.nombre;
+
+document.getElementById("telefono").value =
+cliente.telefono;
+
+document.getElementById("direccion").value =
+cliente.direccion;
+
+document.getElementById("observaciones").value =
+cliente.observaciones;
+
+editando = index;
+
+window.scrollTo(0,0);
+
+}
+
+function borrarCliente(index){
+
+if(confirm("¿Eliminar cliente?")){
+
+clientes.splice(index,1);
+
+localStorage.setItem(
+"clientes",
+JSON.stringify(clientes)
+);
+
+mostrarClientes();
+
+}
+
+}
+
+function limpiarFormulario(){
+
+document.getElementById("nombre").value="";
+document.getElementById("telefono").value="";
+document.getElementById("direccion").value="";
+document.getElementById("observaciones").value="";
+
+}
+
+function buscarCliente(){
+
+let texto =
+document.getElementById("buscar")
+.value
+.toLowerCase();
+
+let bloques =
+document.querySelectorAll(".cliente");
+
+bloques.forEach(bloque=>{
+
+if(
+bloque.innerText
+.toLowerCase()
+.includes(texto)
+){
+
+bloque.style.display="block";
+
+}else{
+
+bloque.style.display="none";
+
+}
+
+});
+
+}
+
+</script>
+
+</body>
+</html>

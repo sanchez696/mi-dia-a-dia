@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Materiales y Almacén</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f5f5f5;
+}
+
+header{
+background:#0F4C81;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.container{
+max-width:1200px;
+margin:auto;
+padding:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+margin-bottom:20px;
+border-radius:15px;
+box-shadow:0 3px 10px rgba(0,0,0,.1);
+}
+
+label{
+display:block;
+margin-top:10px;
+font-weight:bold;
+}
+
+input{
+width:100%;
+padding:10px;
+margin-top:5px;
+border:1px solid #ccc;
+border-radius:8px;
+}
+
+button{
+padding:12px 20px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin-top:15px;
+}
+
+.guardar{
+background:#0F4C81;
+color:white;
+}
+
+.eliminar{
+background:red;
+color:white;
+}
+
+.stockBajo{
+background:#ffebee;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th{
+background:#0F4C81;
+color:white;
+padding:10px;
+}
+
+td{
+padding:10px;
+border-bottom:1px solid #ddd;
+text-align:center;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+<h1>📦 Materiales y Almacén</h1>
+
+<button onclick="location.href='index.html'">
+🏠 Inicio
+</button>
+
+</header>
+
+<div class="container">
+
+<div class="card">
+
+<label>Referencia</label>
+<input type="text" id="referencia">
+
+<label>Descripción</label>
+<input type="text" id="descripcion">
+
+<label>Stock</label>
+<input type="number" id="stock">
+
+<label>Precio Compra (€)</label>
+<input type="number" id="compra">
+
+<label>Precio Venta (€)</label>
+<input type="number" id="venta">
+
+<button
+class="guardar"
+onclick="guardarMaterial()">
+
+💾 Guardar Material
+
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>📋 Inventario</h2>
+
+<table>
+
+<thead>
+
+<tr>
+<th>Ref.</th>
+<th>Descripción</th>
+<th>Stock</th>
+<th>Compra</th>
+<th>Venta</th>
+<th>Beneficio</th>
+<th>Acción</th>
+</tr>
+
+</thead>
+
+<tbody id="tablaMateriales">
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<script>
+
+let materiales =
+JSON.parse(
+localStorage.getItem("materiales")
+) || [];
+
+function guardarMaterial(){
+
+let material = {
+
+referencia:
+document.getElementById(
+"referencia"
+).value,
+
+descripcion:
+document.getElementById(
+"descripcion"
+).value,
+
+stock:
+parseInt(
+document.getElementById(
+"stock"
+).value
+) || 0,
+
+compra:
+parseFloat(
+document.getElementById(
+"compra"
+).value
+) || 0,
+
+venta:
+parseFloat(
+document.getElementById(
+"venta"
+).value
+) || 0
+
+};
+
+materiales.push(material);
+
+localStorage.setItem(
+"materiales",
+JSON.stringify(materiales)
+);
+
+alert("Material guardado");
+
+location.reload();
+
+}
+
+function cargarMateriales(){
+
+let tabla =
+document.getElementById(
+"tablaMateriales"
+);
+
+tabla.innerHTML="";
+
+materiales.forEach((m,index)=>{
+
+let beneficio =
+m.venta - m.compra;
+
+tabla.innerHTML += `
+
+<tr class="${
+m.stock <= 5
+?
+'stockBajo'
+:
+''
+}">
+
+<td>${m.referencia}</td>
+
+<td>${m.descripcion}</td>
+
+<td>${m.stock}</td>
+
+<td>${m.compra.toFixed(2)} €</td>
+
+<td>${m.venta.toFixed(2)} €</td>
+
+<td>${beneficio.toFixed(2)} €</td>
+
+<td>
+
+<button
+class="eliminar"
+onclick="eliminarMaterial(${index})">
+
+Eliminar
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+}
+
+function eliminarMaterial(index){
+
+if(confirm("¿Eliminar material?")){
+
+materiales.splice(index,1);
+
+localStorage.setItem(
+"materiales",
+JSON.stringify(materiales)
+);
+
+cargarMateriales();
+
+}
+
+}
+
+cargarMateriales();
+
+</script>
+
+</body>
+</html>

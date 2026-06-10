@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Facturas - Mi Día a Día</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f5f7fa;
+}
+
+header{
+background:#0F4C81;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.container{
+max-width:1200px;
+margin:auto;
+padding:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:15px;
+margin-bottom:20px;
+box-shadow:0 3px 10px rgba(0,0,0,.1);
+}
+
+label{
+display:block;
+margin-top:10px;
+font-weight:bold;
+}
+
+input,
+textarea,
+select{
+width:100%;
+padding:10px;
+margin-top:5px;
+border:1px solid #ccc;
+border-radius:8px;
+}
+
+button{
+padding:12px 20px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin-top:15px;
+margin-right:10px;
+}
+
+.guardar{
+background:#0F4C81;
+color:white;
+}
+
+.cobrada{
+background:green;
+color:white;
+}
+
+.eliminar{
+background:red;
+color:white;
+}
+
+.total{
+font-size:26px;
+font-weight:bold;
+color:green;
+margin-top:15px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+}
+
+th{
+background:#0F4C81;
+color:white;
+padding:10px;
+}
+
+td{
+padding:10px;
+border-bottom:1px solid #ddd;
+text-align:center;
+}
+
+.estadoPendiente{
+color:red;
+font-weight:bold;
+}
+
+.estadoCobrada{
+color:green;
+font-weight:bold;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>🧾 FACTURAS</h1>
+
+<h3>VIP INSTALACIONES</h3>
+
+<p>
+☎ 673 08 67 10<br>
+✉ hola@vipinstalaciones.es<br>
+📍 Calle Ferrers 6
+</p>
+
+<br>
+
+<button onclick="location.href='index.html'">
+🏠 Inicio
+</button>
+
+</header>
+
+<div class="container">
+
+<div class="card">
+
+<h2 id="numeroFactura"></h2>
+
+<label>Cliente</label>
+<input type="text" id="cliente">
+
+<label>Dirección</label>
+<input type="text" id="direccion">
+
+<label>Concepto</label>
+<textarea id="concepto"></textarea>
+
+<label>Base Imponible (€)</label>
+<input
+type="number"
+id="base"
+oninput="calcularTotal()">
+
+<label>IVA (%)</label>
+<input
+type="number"
+id="iva"
+value="21"
+oninput="calcularTotal()">
+
+<div id="importeIva"></div>
+
+<div class="total" id="total">
+TOTAL: 0 €
+</div>
+
+<button
+class="guardar"
+onclick="guardarFactura()">
+
+💾 Guardar Factura
+
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>📋 Facturas Guardadas</h2>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Nº</th>
+<th>Cliente</th>
+<th>Total</th>
+<th>Estado</th>
+<th>Acciones</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tablaFacturas">
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<script>
+
+let facturas =
+JSON.parse(
+localStorage.getItem("facturas")
+) || [];
+
+let numero =
+facturas.length + 1;
+
+let codigo =
+"FAC-2025-" +
+String(numero).padStart(3,"0");
+
+document
+.getElementById("numeroFactura")
+.innerHTML =
+"Factura Nº " + codigo;
+
+function calcularTotal(){
+
+let base =
+parseFloat(
+document.getElementById("base").value
+) || 0;
+
+let iva =
+parseFloat(
+document.getElementById("iva").value
+) || 0;
+
+let importeIva =
+base * iva / 100;
+
+let total =
+base + importeIva;
+
+document
+.getElementById("importeIva")
+.innerHTML =
+"IVA: " +
+importeIva.toFixed(2) +
+" €";
+
+document
+.getElementById("total")
+.innerHTML =
+"TOTAL: " +
+total.toFixed(2) +
+" €";
+
+}
+
+function guardarFactura(){
+
+let base =
+parseFloat(
+document.getElementById("base").value
+) || 0;
+
+let iva =
+parseFloat(
+document.getElementById("iva").value
+) || 0;
+
+let total =
+base + (base * iva / 100);
+
+let factura = {
+
+codigo:codigo,
+
+cliente:
+document.getElementById("cliente").value,
+
+direccion:
+document.getElementById("direccion").value,
+
+concepto:
+document.getElementById("concepto").value,
+
+base:base,
+
+iva:iva,
+
+total:total,
+
+estado:"Pendiente"
+
+};
+
+facturas.push(factura);
+
+localStorage.setItem(
+"facturas",
+JSON.stringify(facturas)
+);
+
+alert("Factura guardada");
+
+location.reload();
+
+}
+
+function cargarFacturas(){
+
+let tabla =
+document.getElementById(
+"tablaFacturas"
+);
+
+tabla.innerHTML="";
+
+facturas.forEach((f,index)=>{
+
+tabla.innerHTML += `
+
+<tr>
+
+<td>${f.codigo}</td>
+
+<td>${f.cliente}</td>
+
+<td>${f.total.toFixed(2)} €</td>
+
+<td class="${
+f.estado==="Cobrada"
+?
+"estadoCobrada"
+:
+"estadoPendiente"
+}">
+
+${f.estado}
+
+</td>
+
+<td>
+
+<button
+class="cobrada"
+onclick="marcarCobrada(${index})">
+
+Cobrada
+
+</button>
+
+<button
+class="eliminar"
+onclick="eliminarFactura(${index})">
+
+Eliminar
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+}
+
+function marcarCobrada(index){
+
+facturas[index].estado =
+"Cobrada";
+
+localStorage.setItem(
+"facturas",
+JSON.stringify(facturas)
+);
+
+cargarFacturas();
+
+}
+
+function eliminarFactura(index){
+
+if(confirm("¿Eliminar factura?")){
+
+facturas.splice(index,1);
+
+localStorage.setItem(
+"facturas",
+JSON.stringify(facturas)
+);
+
+cargarFacturas();
+
+}
+
+}
+
+cargarFacturas();
+
+</script>
+
+</body>
+</html>

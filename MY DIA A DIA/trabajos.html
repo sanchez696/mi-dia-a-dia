@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Trabajos</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f5f7fa;
+}
+
+header{
+background:#0F4C81;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.container{
+padding:20px;
+}
+
+.buscar{
+width:100%;
+padding:12px;
+border:1px solid #ccc;
+border-radius:10px;
+margin-bottom:20px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+background:white;
+border-radius:10px;
+overflow:hidden;
+box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+th{
+background:#0F4C81;
+color:white;
+padding:12px;
+}
+
+td{
+padding:10px;
+border-bottom:1px solid #eee;
+}
+
+tr:hover{
+background:#f8f8f8;
+}
+
+button{
+padding:8px 12px;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+.ver{
+background:#007bff;
+color:white;
+}
+
+.borrar{
+background:red;
+color:white;
+}
+
+.estado{
+font-weight:bold;
+}
+
+.pendiente{
+color:#007bff;
+}
+
+.curso{
+color:orange;
+}
+
+.urgente{
+color:red;
+}
+
+.finalizado{
+color:green;
+}
+
+.modal{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.5);
+}
+
+.modal-content{
+background:white;
+width:90%;
+max-width:500px;
+margin:50px auto;
+padding:20px;
+border-radius:10px;
+}
+
+select{
+width:100%;
+padding:10px;
+margin-top:10px;
+}
+
+.cerrar{
+background:#333;
+color:white;
+margin-top:15px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>📋 Gestión de Trabajos</h1>
+
+<button onclick="location.href='index.html'">
+🏠 Inicio
+</button>
+
+</header>
+
+<div class="container">
+
+<input
+class="buscar"
+type="text"
+placeholder="Buscar cliente o trabajo..."
+onkeyup="buscar()"
+id="buscar">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Día/Hora</th>
+<th>Cliente</th>
+<th>Trabajo</th>
+<th>Estado</th>
+<th>Acciones</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tabla">
+
+</tbody>
+
+</table>
+
+</div>
+
+<div class="modal" id="modal">
+
+<div class="modal-content">
+
+<h2>Ficha de Trabajo</h2>
+
+<hr><br>
+
+<p><strong>Cliente:</strong></p>
+<p id="mCliente"></p>
+
+<br>
+
+<p><strong>Teléfono:</strong></p>
+<p id="mTelefono"></p>
+
+<br>
+
+<p><strong>Dirección:</strong></p>
+<p id="mDireccion"></p>
+
+<br>
+
+<p><strong>Trabajo:</strong></p>
+<p id="mTrabajo"></p>
+
+<br>
+
+<p><strong>Estado:</strong></p>
+
+<select id="nuevoEstado">
+
+<option value="pendiente">Pendiente</option>
+
+<option value="curso">En Curso</option>
+
+<option value="urgente">Urgente</option>
+
+<option value="finalizado">Finalizado</option>
+
+</select>
+
+<br><br>
+
+<button onclick="guardarEstado()">
+Guardar Estado
+</button>
+
+<button
+class="cerrar"
+onclick="cerrarModal()">
+Cerrar
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+let trabajos =
+JSON.parse(localStorage.getItem("agenda"))
+|| {};
+
+let trabajoActual = "";
+
+cargarTabla();
+
+function cargarTabla(){
+
+let tabla =
+document.getElementById("tabla");
+
+tabla.innerHTML="";
+
+for(let clave in trabajos){
+
+let trabajo =
+trabajos[clave];
+
+tabla.innerHTML += `
+
+<tr>
+
+<td>${clave}</td>
+
+<td>${trabajo.cliente}</td>
+
+<td>${trabajo.descripcion}</td>
+
+<td class="${trabajo.estado}">
+${trabajo.estado}
+</td>
+
+<td>
+
+<button
+class="ver"
+onclick="verTrabajo('${clave}')">
+
+Ver
+
+</button>
+
+<button
+class="borrar"
+onclick="borrarTrabajo('${clave}')">
+
+Eliminar
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+}
+
+}
+
+function verTrabajo(clave){
+
+trabajoActual = clave;
+
+let t =
+trabajos[clave];
+
+document.getElementById("mCliente")
+.innerText=t.cliente;
+
+document.getElementById("mTelefono")
+.innerText=t.telefono;
+
+document.getElementById("mDireccion")
+.innerText=t.direccion;
+
+document.getElementById("mTrabajo")
+.innerText=t.descripcion;
+
+document.getElementById("nuevoEstado")
+.value=t.estado;
+
+document.getElementById("modal")
+.style.display="block";
+
+}
+
+function cerrarModal(){
+
+document.getElementById("modal")
+.style.display="none";
+
+}
+
+function guardarEstado(){
+
+trabajos[trabajoActual].estado =
+document.getElementById("nuevoEstado").value;
+
+localStorage.setItem(
+"agenda",
+JSON.stringify(trabajos)
+);
+
+cerrarModal();
+
+cargarTabla();
+
+}
+
+function borrarTrabajo(clave){
+
+if(confirm("¿Eliminar trabajo?")){
+
+delete trabajos[clave];
+
+localStorage.setItem(
+"agenda",
+JSON.stringify(trabajos)
+);
+
+cargarTabla();
+
+}
+
+}
+
+function buscar(){
+
+let texto =
+document.getElementById("buscar")
+.value
+.toLowerCase();
+
+let filas =
+document.querySelectorAll("tbody tr");
+
+filas.forEach(fila=>{
+
+if(
+fila.innerText
+.toLowerCase()
+.includes(texto)
+){
+
+fila.style.display="";
+
+}else{
+
+fila.style.display="none";
+
+}
+
+});
+
+}
+
+</script>
+
+</body>
+</html>

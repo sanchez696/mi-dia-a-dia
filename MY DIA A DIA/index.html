@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Día a Día</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f5f7fa;
+}
+
+header{
+background:#0F4C81;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.logo{
+font-size:32px;
+font-weight:bold;
+}
+
+.subtitulo{
+font-size:14px;
+margin-top:5px;
+}
+
+.dashboard{
+padding:20px;
+}
+
+.menu{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+gap:15px;
+}
+
+.boton{
+background:white;
+padding:25px;
+border-radius:15px;
+text-align:center;
+cursor:pointer;
+box-shadow:0 3px 10px rgba(0,0,0,.1);
+transition:0.3s;
+}
+
+.boton:hover{
+transform:translateY(-5px);
+}
+
+.icono{
+font-size:40px;
+margin-bottom:10px;
+}
+
+.titulo{
+font-size:18px;
+font-weight:bold;
+}
+
+footer{
+position:fixed;
+bottom:0;
+width:100%;
+background:white;
+display:flex;
+justify-content:space-around;
+padding:10px;
+box-shadow:0 -2px 10px rgba(0,0,0,.1);
+}
+
+footer div{
+text-align:center;
+font-size:12px;
+cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<div class="logo">
+📋 Mi Día a Día
+</div>
+
+<div class="subtitulo">
+VIP INSTALACIONES
+</div>
+
+</header>
+
+<div class="dashboard">
+
+<div class="menu">
+
+<div class="boton" onclick="location.href='agenda.html'">
+<div class="icono">📅</div>
+<div class="titulo">Agenda</div>
+</div>
+
+<div class="boton" onclick="location.href='clientes.html'">
+<div class="icono">👥</div>
+<div class="titulo">Clientes</div>
+</div>
+
+<div class="boton" onclick="location.href='trabajos.html'">
+<div class="icono">📋</div>
+<div class="titulo">Trabajos</div>
+</div>
+
+<div class="boton" onclick="location.href='partes.html'">
+<div class="icono">📄</div>
+<div class="titulo">Partes</div>
+</div>
+
+<div class="boton" onclick="location.href='partes-listado.html'">
+<div class="icono">🗂️</div>
+<div class="titulo">Partes Guardados</div>
+</div>
+
+<div class="boton" onclick="location.href='vehiculos.html'">
+<div class="icono">🚗</div>
+<div class="titulo">Vehículos</div>
+</div>
+
+<div class="boton" onclick="location.href='presupuestos-pro.html'">
+<div class="icono">💰</div>
+<div class="titulo">Presupuestos</div>
+</div>
+
+<div class="boton" onclick="location.href='facturas.html'">
+<div class="icono">🧾</div>
+<div class="titulo">Facturas</div>
+</div>
+
+<div class="boton" onclick="location.href='materiales.html'">
+<div class="icono">📦</div>
+<div class="titulo">Materiales</div>
+</div>
+
+</div>
+
+</div>
+
+<footer>
+
+<div onclick="location.href='index.html'">
+🏠<br>Inicio
+</div>
+
+<div onclick="location.href='agenda.html'">
+📅<br>Agenda
+</div>
+
+<div onclick="location.href='partes.html'">
+📄<br>Partes
+</div>
+
+<div onclick="location.href='facturas.html'">
+🧾<br>Facturas
+</div>
+
+</footer>
+
+</body>
+</html>

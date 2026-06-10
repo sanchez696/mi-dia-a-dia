@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Vehículos - Mi Día a Día</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f5f7fa;
+}
+
+header{
+background:#0F4C81;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.container{
+max-width:1200px;
+margin:auto;
+padding:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:15px;
+margin-bottom:20px;
+box-shadow:0 3px 10px rgba(0,0,0,.1);
+}
+
+label{
+font-weight:bold;
+display:block;
+margin-top:10px;
+}
+
+input, textarea{
+width:100%;
+padding:10px;
+margin-top:5px;
+border:1px solid #ccc;
+border-radius:8px;
+}
+
+textarea{
+height:80px;
+}
+
+button{
+padding:12px 20px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin-top:15px;
+}
+
+.guardar{
+background:#0F4C81;
+color:white;
+}
+
+.eliminar{
+background:red;
+color:white;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+background:white;
+}
+
+th{
+background:#0F4C81;
+color:white;
+padding:10px;
+}
+
+td{
+padding:10px;
+border-bottom:1px solid #ddd;
+text-align:center;
+}
+
+.alerta{
+background:#fff3cd;
+padding:10px;
+border-radius:10px;
+margin-bottom:15px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+<h1>🚗 Vehículos</h1>
+
+<button onclick="location.href='index.html'">
+🏠 Inicio
+</button>
+
+</header>
+
+<div class="container">
+
+<div id="alertas"></div>
+
+<div class="card">
+
+<label>Matrícula</label>
+<input type="text" id="matricula">
+
+<label>Marca</label>
+<input type="text" id="marca">
+
+<label>Modelo</label>
+<input type="text" id="modelo">
+
+<label>ITV</label>
+<input type="date" id="itv">
+
+<label>Seguro</label>
+<input type="date" id="seguro">
+
+<label>Kilómetros</label>
+<input type="number" id="km">
+
+<label>Próxima revisión</label>
+<input type="date" id="revision">
+
+<label>Observaciones</label>
+<textarea id="obs"></textarea>
+
+<button class="guardar" onclick="guardarVehiculo()">
+💾 Guardar Vehículo
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>Listado de Vehículos</h2>
+
+<table>
+
+<thead>
+<tr>
+<th>Matrícula</th>
+<th>Marca</th>
+<th>Modelo</th>
+<th>ITV</th>
+<th>Seguro</th>
+<th>Acción</th>
+</tr>
+</thead>
+
+<tbody id="tabla"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<script>
+
+let vehiculos =
+JSON.parse(localStorage.getItem("vehiculos"))
+|| [];
+
+function guardarVehiculo(){
+
+let vehiculo = {
+
+matricula:
+document.getElementById("matricula").value,
+
+marca:
+document.getElementById("marca").value,
+
+modelo:
+document.getElementById("modelo").value,
+
+itv:
+document.getElementById("itv").value,
+
+seguro:
+document.getElementById("seguro").value,
+
+km:
+document.getElementById("km").value,
+
+revision:
+document.getElementById("revision").value,
+
+obs:
+document.getElementById("obs").value
+
+};
+
+vehiculos.push(vehiculo);
+
+localStorage.setItem(
+"vehiculos",
+JSON.stringify(vehiculos)
+);
+
+limpiarFormulario();
+
+cargarVehiculos();
+
+alert("Vehículo guardado correctamente");
+
+}
+
+function limpiarFormulario(){
+
+document.getElementById("matricula").value="";
+document.getElementById("marca").value="";
+document.getElementById("modelo").value="";
+document.getElementById("itv").value="";
+document.getElementById("seguro").value="";
+document.getElementById("km").value="";
+document.getElementById("revision").value="";
+document.getElementById("obs").value="";
+
+}
+
+function cargarVehiculos(){
+
+let tabla =
+document.getElementById("tabla");
+
+tabla.innerHTML="";
+
+vehiculos.forEach((v,index)=>{
+
+tabla.innerHTML += `
+<tr>
+
+<td>${v.matricula}</td>
+<td>${v.marca}</td>
+<td>${v.modelo}</td>
+<td>${v.itv}</td>
+<td>${v.seguro}</td>
+
+<td>
+
+<button
+class="eliminar"
+onclick="eliminarVehiculo(${index})">
+
+Eliminar
+
+</button>
+
+</td>
+
+</tr>
+`;
+
+});
+
+mostrarAlertas();
+
+}
+
+function eliminarVehiculo(index){
+
+if(confirm("¿Eliminar vehículo?")){
+
+vehiculos.splice(index,1);
+
+localStorage.setItem(
+"vehiculos",
+JSON.stringify(vehiculos)
+);
+
+cargarVehiculos();
+
+}
+
+}
+
+function mostrarAlertas(){
+
+let alertas =
+document.getElementById("alertas");
+
+alertas.innerHTML="";
+
+let hoy =
+new Date();
+
+vehiculos.forEach(v=>{
+
+if(v.itv){
+
+let fechaITV =
+new Date(v.itv);
+
+let dias =
+Math.ceil(
+(fechaITV-hoy)/(1000*60*60*24)
+);
+
+if(dias <= 30){
+
+alertas.innerHTML += `
+<div class="alerta">
+⚠ ITV de ${v.matricula}
+caduca en ${dias} días
+</div>
+`;
+
+}
+
+}
+
+if(v.seguro){
+
+let fechaSeguro =
+new Date(v.seguro);
+
+let dias =
+Math.ceil(
+(fechaSeguro-hoy)/(1000*60*60*24)
+);
+
+if(dias <= 30){
+
+alertas.innerHTML += `
+<div class="alerta">
+⚠ Seguro de ${v.matricula}
+caduca en ${dias} días
+</div>
+`;
+
+}
+
+}
+
+});
+
+}
+
+cargarVehiculos();
+
+</script>
+
+</body>
+</html>

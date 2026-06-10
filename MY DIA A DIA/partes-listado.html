@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Partes Guardados</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f5f5f5;
+}
+
+header{
+background:#0F4C81;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.container{
+padding:20px;
+max-width:1200px;
+margin:auto;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:15px;
+margin-bottom:15px;
+box-shadow:0 3px 10px rgba(0,0,0,.1);
+}
+
+h2{
+margin-bottom:15px;
+}
+
+button{
+padding:10px 15px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin-top:10px;
+}
+
+.eliminar{
+background:red;
+color:white;
+}
+
+.inicio{
+background:#0F4C81;
+color:white;
+}
+
+.vacio{
+text-align:center;
+padding:50px;
+color:#666;
+font-size:18px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>🗂️ Partes Guardados</h1>
+
+<br>
+
+<button
+class="inicio"
+onclick="location.href='index.html'">
+
+🏠 Volver al Inicio
+
+</button>
+
+</header>
+
+<div class="container">
+
+<div id="listado"></div>
+
+</div>
+
+<script>
+
+let partes =
+JSON.parse(
+localStorage.getItem("partes")
+) || [];
+
+const listado =
+document.getElementById("listado");
+
+function cargarPartes(){
+
+if(partes.length===0){
+
+listado.innerHTML = `
+<div class="vacio">
+
+📄 No hay partes guardados
+
+</div>
+`;
+
+return;
+
+}
+
+listado.innerHTML = "";
+
+partes.forEach((parte,index)=>{
+
+listado.innerHTML += `
+
+<div class="card">
+
+<h2>
+📄 Parte ${index + 1}
+</h2>
+
+<p>
+<strong>Cliente:</strong>
+${parte.cliente || "Sin cliente"}
+</p>
+
+<p>
+<strong>Trabajo:</strong>
+${parte.trabajo || "Sin descripción"}
+</p>
+
+<p>
+<strong>Fecha:</strong>
+${parte.fecha || "Sin fecha"}
+</p>
+
+<button
+class="eliminar"
+onclick="eliminarParte(${index})">
+
+🗑 Eliminar
+
+</button>
+
+</div>
+
+`;
+
+});
+
+}
+
+function eliminarParte(index){
+
+if(confirm("¿Eliminar este parte?")){
+
+partes.splice(index,1);
+
+localStorage.setItem(
+"partes",
+JSON.stringify(partes)
+);
+
+cargarPartes();
+
+}
+
+}
+
+cargarPartes();
+
+</script>
+
+</body>
+</html>
