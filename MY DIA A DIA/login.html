@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Login - Mi Día a Día PRO</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+min-height:100vh;
+background:linear-gradient(135deg,#0F4C81,#001f3f);
+display:flex;
+justify-content:center;
+align-items:center;
+padding:20px;
+}
+
+.login-box{
+background:white;
+width:100%;
+max-width:420px;
+padding:30px;
+border-radius:20px;
+box-shadow:0 10px 30px rgba(0,0,0,.3);
+text-align:center;
+}
+
+.logo{
+font-size:50px;
+margin-bottom:10px;
+}
+
+h1{
+color:#0F4C81;
+margin-bottom:10px;
+}
+
+p{
+color:#666;
+margin-bottom:20px;
+}
+
+label{
+display:block;
+text-align:left;
+font-weight:bold;
+margin-top:15px;
+}
+
+input{
+width:100%;
+padding:12px;
+margin-top:5px;
+border:1px solid #ccc;
+border-radius:10px;
+}
+
+button{
+width:100%;
+padding:14px;
+margin-top:25px;
+background:#0F4C81;
+color:white;
+border:none;
+border-radius:10px;
+font-size:16px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.error{
+color:red;
+margin-top:15px;
+}
+
+.info{
+margin-top:20px;
+font-size:13px;
+color:#666;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="login-box">
+
+<div class="logo">🔧</div>
+
+<h1>VIP INSTALACIONES</h1>
+
+<p>Mi Día a Día PRO</p>
+
+<label>Usuario</label>
+<input type="text" id="usuario" placeholder="Usuario">
+
+<label>Contraseña</label>
+<input type="password" id="password" placeholder="Contraseña">
+
+<button onclick="entrar()">
+Entrar
+</button>
+
+<div id="error" class="error"></div>
+
+<div class="info">
+Acceso para técnicos y administradores
+</div>
+
+</div>
+
+<script>
+
+const SUPABASE_URL =
+"https://evhcygynfseonzlkqdsp.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_aB-_vkxGV9e7BujEy0NEfQ_lMfOlEMS";
+
+const sb =
+window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+async function entrar(){
+
+const usuario =
+document.getElementById("usuario").value.trim();
+
+const password =
+document.getElementById("password").value.trim();
+
+const errorBox =
+document.getElementById("error");
+
+errorBox.innerText = "";
+
+if(usuario === "" || password === ""){
+errorBox.innerText = "Introduce usuario y contraseña";
+return;
+}
+
+const { data, error } =
+await sb
+.from("usuarios")
+.select("*")
+.eq("usuario", usuario)
+.eq("password", password)
+.eq("activo", true)
+.single();
+
+if(error || !data){
+
+errorBox.innerText =
+"Usuario o contraseña incorrectos";
+
+return;
+
+}
+
+localStorage.setItem("usuarioActivo", data.usuario);
+localStorage.setItem("nombreTecnico", data.nombre || data.usuario);
+localStorage.setItem("rolTecnico", data.rol || "");
+localStorage.setItem("firmaTecnico", data.firma || "");
+localStorage.setItem("emailTecnico", data.email || "");
+localStorage.setItem("telefonoTecnico", data.telefono || "");
+
+location.href = "index.html";
+
+}
+
+</script>
+
+</body>
+</html>

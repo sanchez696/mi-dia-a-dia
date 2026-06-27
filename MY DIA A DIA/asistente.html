@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asistente IA</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+<style>
+
+.acciones{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:15px;
+margin-top:20px;
+}
+
+.resultado{
+background:white;
+padding:20px;
+border-radius:15px;
+margin-top:20px;
+min-height:200px;
+box-shadow:0 3px 10px rgba(0,0,0,.1);
+white-space:pre-wrap;
+}
+
+button{
+width:100%;
+}
+
+textarea{
+height:150px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>🤖 Asistente IA</h1>
+
+<button
+class="btn btn-primary"
+onclick="location.href='index.html'">
+
+🏠 Inicio
+
+</button>
+
+</header>
+
+<div class="app-container">
+
+<div class="card">
+
+<label>Escribe tu consulta</label>
+
+<textarea
+id="pregunta"
+placeholder="Ejemplo: Se ha sustituido una bomba de condensados y se ha comprobado el funcionamiento."></textarea>
+
+<button
+class="btn btn-success"
+onclick="redactarParte()">
+
+📄 Redactar Parte
+
+</button>
+
+</div>
+
+<div class="acciones">
+
+<button
+class="btn btn-primary"
+onclick="correoCliente()">
+
+📧 Correo al Cliente
+
+</button>
+
+<button
+class="btn btn-primary"
+onclick="presupuesto()">
+
+💰 Crear Presupuesto
+
+</button>
+
+<button
+class="btn btn-primary"
+onclick="averia()">
+
+🔧 Ayuda Técnica
+
+</button>
+
+<button
+class="btn btn-primary"
+onclick="material()">
+
+📦 Material Necesario
+
+</button>
+
+</div>
+
+<div
+id="resultado"
+class="resultado">
+
+Aquí aparecerá la respuesta del asistente.
+
+</div>
+
+</div>
+
+<script>
+
+function obtenerTexto(){
+
+return document
+.getElementById("pregunta")
+.value
+.trim();
+
+}
+
+function redactarParte(){
+
+let texto = obtenerTexto();
+
+if(!texto){
+alert("Escribe algo primero");
+return;
+}
+
+document.getElementById("resultado")
+.innerText =
+
+"PARTE DE TRABAJO\n\n" +
+texto +
+"\n\nSe informa al cliente de la actuación realizada y se comprueba el correcto funcionamiento de la instalación.";
+
+}
+
+function correoCliente(){
+
+let texto = obtenerTexto();
+
+document.getElementById("resultado")
+.innerText =
+
+"Estimado cliente:\n\n" +
+texto +
+"\n\nQuedamos a su disposición para cualquier consulta.\n\nUn saludo.\nVIP INSTALACIONES";
+
+}
+
+function presupuesto(){
+
+let texto = obtenerTexto();
+
+document.getElementById("resultado")
+.innerText =
+
+"PRESUPUESTO\n\n" +
+texto +
+"\n\nMateriales: __________\nMano de obra: __________\nIVA: __________\n\nTOTAL: __________";
+
+}
+
+function averia(){
+
+let texto = obtenerTexto();
+
+document.getElementById("resultado")
+.innerText =
+
+"AYUDA TÉCNICA\n\nIncidencia:\n" +
+texto +
+"\n\n• Revisar alimentación eléctrica.\n• Revisar fusibles.\n• Revisar conexiones.\n• Comprobar códigos de error.\n• Consultar manual técnico.";
+
+}
+
+function material(){
+
+let texto = obtenerTexto();
+
+document.getElementById("resultado")
+.innerText =
+
+"POSIBLE MATERIAL NECESARIO\n\nPara:\n" +
+texto +
+"\n\n• Tornillería.\n• Tubo.\n• Cinta aislante.\n• Conectores.\n• Herramientas de comprobación.";
+
+}
+
+</script>
+
+</body>
+</html>

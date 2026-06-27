@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mi Día a Día</title>
+
+<title>VIP Instalaciones - Mi Día a Día PRO</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#213d6b">
+<link rel="apple-touch-icon" href="img/icon-192.png">
 
 <style>
 
@@ -15,79 +20,82 @@ font-family:Arial,sans-serif;
 }
 
 body{
-background:#f5f7fa;
+background:#f2f2f2;
 }
 
 header{
-background:#0F4C81;
+background:#213d6b;
 color:white;
 padding:20px;
 text-align:center;
 }
 
 .logo{
-font-size:32px;
-font-weight:bold;
+display:flex;
+justify-content:center;
+align-items:center;
+gap:20px;
+flex-wrap:wrap;
 }
 
-.subtitulo{
-font-size:14px;
-margin-top:5px;
-}
-
-.dashboard{
-padding:20px;
-}
-
-.menu{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-gap:15px;
-}
-
-.boton{
+.logo img{
+width:90px;
+height:90px;
+object-fit:contain;
 background:white;
-padding:25px;
 border-radius:15px;
+padding:10px;
+}
+
+.usuario{
+margin-top:20px;
+font-size:22px;
+}
+
+.salir{
+margin-top:15px;
+padding:10px 20px;
+background:#e74c3c;
+color:white;
+border:none;
+border-radius:10px;
+cursor:pointer;
+}
+
+.grid{
+padding:30px;
+display:grid;
+grid-template-columns:
+repeat(auto-fit,minmax(220px,1fr));
+gap:25px;
+max-width:1400px;
+margin:auto;
+}
+
+.card{
+background:white;
+padding:40px 20px;
+border-radius:25px;
 text-align:center;
 cursor:pointer;
-box-shadow:0 3px 10px rgba(0,0,0,.1);
-transition:0.3s;
+box-shadow:0 5px 20px rgba(0,0,0,.1);
+transition:.3s;
 }
 
-.boton:hover{
+.card:hover{
 transform:translateY(-5px);
 }
 
 .icono{
-font-size:40px;
-margin-bottom:10px;
+font-size:55px;
+margin-bottom:20px;
 }
 
-.titulo{
+.card h2{
 font-size:18px;
-font-weight:bold;
-}
-
-footer{
-position:fixed;
-bottom:0;
-width:100%;
-background:white;
-display:flex;
-justify-content:space-around;
-padding:10px;
-box-shadow:0 -2px 10px rgba(0,0,0,.1);
-}
-
-footer div{
-text-align:center;
-font-size:12px;
-cursor:pointer;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -95,87 +103,130 @@ cursor:pointer;
 <header>
 
 <div class="logo">
-📋 Mi Día a Día
+
+<img src="img/logo.jpg">
+
+<div>
+
+<h1>VIP INSTALACIONES</h1>
+<h2>Mi Día a Día PRO</h2>
+
+<div id="usuario" class="usuario"></div>
+
+<button class="salir" onclick="cerrarSesion()">
+Salir
+</button>
+
 </div>
 
-<div class="subtitulo">
-VIP INSTALACIONES
 </div>
 
 </header>
 
-<div class="dashboard">
+<div class="grid">
 
-<div class="menu">
-
-<div class="boton" onclick="location.href='agenda.html'">
-<div class="icono">📅</div>
-<div class="titulo">Agenda</div>
+<div class="card" onclick="location.href='agenda.html'">
+<div class="icono">🗓️</div>
+<h2>Agenda</h2>
 </div>
 
-<div class="boton" onclick="location.href='clientes.html'">
+<div class="card" onclick="location.href='clientes.html'">
 <div class="icono">👥</div>
-<div class="titulo">Clientes</div>
+<h2>Clientes</h2>
 </div>
 
-<div class="boton" onclick="location.href='trabajos.html'">
-<div class="icono">📋</div>
-<div class="titulo">Trabajos</div>
+<div class="card" onclick="location.href='usuarios.html'">
+<div class="icono">🧑‍💼</div>
+<h2>Usuarios</h2>
 </div>
 
-<div class="boton" onclick="location.href='partes.html'">
+<div class="card" onclick="location.href='partes.html'">
 <div class="icono">📄</div>
-<div class="titulo">Partes</div>
+<h2>Partes</h2>
 </div>
 
-<div class="boton" onclick="location.href='partes-listado.html'">
-<div class="icono">🗂️</div>
-<div class="titulo">Partes Guardados</div>
+<div class="card" onclick="location.href='partes-listado.html'">
+<div class="icono">📁</div>
+<h2>Partes Guardados</h2>
 </div>
 
-<div class="boton" onclick="location.href='vehiculos.html'">
+<div class="card" onclick="location.href='vehiculos.html'">
 <div class="icono">🚗</div>
-<div class="titulo">Vehículos</div>
+<h2>Vehículos</h2>
 </div>
 
-<div class="boton" onclick="location.href='presupuestos-pro.html'">
+<div class="card" onclick="location.href='presupuestos.html'">
 <div class="icono">💰</div>
-<div class="titulo">Presupuestos</div>
+<h2>Presupuestos</h2>
 </div>
 
-<div class="boton" onclick="location.href='facturas.html'">
+<div class="card" onclick="location.href='facturas.html'">
 <div class="icono">🧾</div>
-<div class="titulo">Facturas</div>
+<h2>Facturas</h2>
 </div>
 
-<div class="boton" onclick="location.href='materiales.html'">
+<div class="card" onclick="location.href='materiales.html'">
 <div class="icono">📦</div>
-<div class="titulo">Materiales</div>
+<h2>Materiales</h2>
+</div>
+
+<div class="card" onclick="location.href='foto-pdf.html'">
+<div class="icono">📷</div>
+<h2>Foto → PDF</h2>
+</div>
+
+<div class="card" onclick="location.href='opciones.html'">
+<div class="icono">⚙️</div>
+<h2>Opciones</h2>
+</div>
+
+<div class="card" onclick="location.href='asistente.html'">
+<div class="icono">🤖</div>
+<h2>Asistente IA</h2>
 </div>
 
 </div>
 
-</div>
+<script>
 
-<footer>
+const nombre =
+localStorage.getItem("nombreTecnico")
+||
+localStorage.getItem("usuarioActivo")
+||
+"Invitado";
 
-<div onclick="location.href='index.html'">
-🏠<br>Inicio
-</div>
+const rol =
+localStorage.getItem("rolTecnico")
+|| "";
 
-<div onclick="location.href='agenda.html'">
-📅<br>Agenda
-</div>
+document.getElementById("usuario").innerHTML =
+`👤 ${nombre} (${rol})`;
 
-<div onclick="location.href='partes.html'">
-📄<br>Partes
-</div>
+function cerrarSesion(){
 
-<div onclick="location.href='facturas.html'">
-🧾<br>Facturas
-</div>
+localStorage.removeItem("usuarioActivo");
+localStorage.removeItem("nombreTecnico");
+localStorage.removeItem("rolTecnico");
+localStorage.removeItem("firmaTecnico");
+localStorage.removeItem("emailTecnico");
+localStorage.removeItem("telefonoTecnico");
 
-</footer>
+location.href = "login.html";
+
+}
+
+if("serviceWorker" in navigator){
+
+navigator.serviceWorker
+.register("service-worker.js")
+.then(() => {
+console.log("PWA instalada");
+});
+
+}
+
+</script>
 
 </body>
 </html>

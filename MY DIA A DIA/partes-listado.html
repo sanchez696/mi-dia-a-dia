@@ -3,53 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Partes Guardados</title>
 
+<link rel="stylesheet" href="css/style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
-}
-
-body{
-background:#f5f5f5;
-}
-
-header{
-background:#0F4C81;
-color:white;
-padding:20px;
-text-align:center;
-}
-
-.container{
-padding:20px;
-max-width:1200px;
-margin:auto;
-}
-
-.card{
-background:white;
-padding:20px;
-border-radius:15px;
-margin-bottom:15px;
-box-shadow:0 3px 10px rgba(0,0,0,.1);
-}
-
-h2{
-margin-bottom:15px;
-}
-
-button{
-padding:10px 15px;
-border:none;
+.card img{
+max-width:160px;
+margin:5px;
 border-radius:8px;
-cursor:pointer;
-margin-top:10px;
+border:1px solid #ddd;
+}
+
+.firma-img{
+max-width:220px;
+background:white;
+padding:5px;
+}
+
+.acciones{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+}
+
+.pdf{
+background:green;
+color:white;
 }
 
 .eliminar{
@@ -57,106 +40,128 @@ background:red;
 color:white;
 }
 
-.inicio{
-background:#0F4C81;
+.compartir{
+background:#25D366;
 color:white;
 }
-
-.vacio{
-text-align:center;
-padding:50px;
-color:#666;
-font-size:18px;
-}
-
 </style>
-
 </head>
 
 <body>
 
 <header>
-
 <h1>🗂️ Partes Guardados</h1>
-
-<br>
-
-<button
-class="inicio"
-onclick="location.href='index.html'">
-
-🏠 Volver al Inicio
-
+<button class="btn btn-primary" onclick="location.href='index.html'">
+🏠 Inicio
 </button>
-
 </header>
 
-<div class="container">
+<div class="app-container">
 
-<div id="listado"></div>
+<div id="listado" class="card">
+Cargando partes...
+</div>
 
 </div>
 
 <script>
 
-let partes =
-JSON.parse(
-localStorage.getItem("partes")
-) || [];
+const SUPABASE_URL =
+"https://evhcygynfseonzlkqdsp.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_aB-_vkxGV9e7BujEy0NEfQ_lMfOlEMS";
+
+const sb =
+window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+let partes = [];
+
+async function cargarPartes(){
+
+const { data, error } =
+await sb
+.from("partes")
+.select("*")
+.order("id",{ascending:false});
+
+if(error){
+document.getElementById("listado").innerHTML =
+"Error cargando partes: " + error.message;
+return;
+}
+
+partes = data || [];
+
+mostrarPartes();
+
+}
+
+function mostrarPartes(){
 
 const listado =
 document.getElementById("listado");
 
-function cargarPartes(){
-
-if(partes.length===0){
-
-listado.innerHTML = `
-<div class="vacio">
-
-📄 No hay partes guardados
-
-</div>
-`;
-
+if(partes.length === 0){
+listado.innerHTML =
+"<p>No hay partes guardados.</p>";
 return;
-
 }
 
 listado.innerHTML = "";
 
 partes.forEach((parte,index)=>{
 
+let fotosHTML = "";
+
+if(parte.fotos && Array.isArray(parte.fotos)){
+parte.fotos.forEach(foto=>{
+fotosHTML += `<img src="${foto}">`;
+});
+}
+
 listado.innerHTML += `
 
 <div class="card">
 
-<h2>
-📄 Parte ${index + 1}
-</h2>
+<h2>📄 ${parte.numero || "Parte " + (index + 1)}</h2>
 
-<p>
-<strong>Cliente:</strong>
-${parte.cliente || "Sin cliente"}
-</p>
+<p><strong>Fecha:</strong> ${parte.fecha || ""}</p>
+<p><strong>Cliente:</strong> ${parte.cliente || ""}</p>
+<p><strong>Técnico:</strong> ${parte.tecnico || ""}</p>
+<p><strong>Vehículo:</strong> ${parte.vehiculo || ""}</p>
+<p><strong>Trabajo:</strong> ${parte.trabajo || ""}</p>
+<p><strong>Material:</strong> ${parte.material || ""}</p>
+<p><strong>Horas:</strong> ${parte.horas || ""}</p>
+<p><strong>Observaciones:</strong> ${parte.observaciones || ""}</p>
 
-<p>
-<strong>Trabajo:</strong>
-${parte.trabajo || "Sin descripción"}
-</p>
+<h3>📷 Fotos</h3>
+${fotosHTML || "<p>Sin fotos</p>"}
 
-<p>
-<strong>Fecha:</strong>
-${parte.fecha || "Sin fecha"}
-</p>
+<h3>✍ Firma Cliente</h3>
+${parte.firma_cliente ? `<img class="firma-img" src="${parte.firma_cliente}">` : "<p>Sin firma cliente</p>"}
 
-<button
-class="eliminar"
-onclick="eliminarParte(${index})">
+<h3>✍ Firma Técnico</h3>
+${parte.firma_tecnico ? `<img class="firma-img" src="${parte.firma_tecnico}">` : "<p>Sin firma técnico</p>"}
 
-🗑 Eliminar
+<div class="acciones">
 
+<button class="pdf" onclick="generarPDF(${index})">
+📄 Descargar PDF
 </button>
+
+<button class="compartir" onclick="compartirPDF(${index})">
+📲 Compartir
+</button>
+
+<button class="eliminar" onclick="eliminarParte(${parte.id})">
+🗑 Eliminar
+</button>
+
+</div>
 
 </div>
 
@@ -166,19 +171,188 @@ onclick="eliminarParte(${index})">
 
 }
 
-function eliminarParte(index){
+async function eliminarParte(id){
 
-if(confirm("¿Eliminar este parte?")){
+if(!confirm("¿Eliminar este parte?")) return;
 
-partes.splice(index,1);
+const { error } =
+await sb
+.from("partes")
+.delete()
+.eq("id",id);
 
-localStorage.setItem(
-"partes",
-JSON.stringify(partes)
-);
+if(error){
+alert("Error eliminando: " + error.message);
+return;
+}
 
+alert("Parte eliminado");
 cargarPartes();
 
+}
+
+async function generarPDF(index){
+
+const parte = partes[index];
+
+const { jsPDF } = window.jspdf;
+
+const doc = new jsPDF();
+
+await construirPDF(doc,parte);
+
+doc.save(
+(parte.numero || "parte") + ".pdf"
+);
+
+}
+
+async function compartirPDF(index){
+
+const parte = partes[index];
+
+const { jsPDF } = window.jspdf;
+
+const doc = new jsPDF();
+
+await construirPDF(doc,parte);
+
+const blob =
+doc.output("blob");
+
+const file =
+new File(
+[blob],
+(parte.numero || "parte") + ".pdf",
+{type:"application/pdf"}
+);
+
+if(navigator.canShare && navigator.canShare({files:[file]})){
+
+await navigator.share({
+files:[file],
+title:"Parte de trabajo",
+text:"Parte de trabajo VIP Instalaciones"
+});
+
+}else{
+
+doc.save(
+(parte.numero || "parte") + ".pdf"
+);
+
+alert("Tu navegador no permite compartir directamente. Se ha descargado el PDF.");
+
+}
+
+}
+
+async function construirPDF(doc,parte){
+
+let y = 15;
+
+try{
+doc.addImage("img/logo.jpg","JPEG",15,8,25,25);
+}catch(e){}
+
+doc.setFontSize(18);
+doc.text("VIP INSTALACIONES",45,18);
+
+doc.setFontSize(10);
+doc.text("Tel: 673 08 67 10",45,25);
+doc.text("Email: hola@vipinstalaciones.es",45,31);
+doc.text("Calle Ferrers 6",45,37);
+
+y = 50;
+
+doc.setFontSize(16);
+doc.text("PARTE DE TRABAJO",15,y);
+
+y += 10;
+
+doc.setFontSize(11);
+
+doc.text("Nº Parte: " + (parte.numero || ""),15,y);
+y += 8;
+
+doc.text("Fecha: " + (parte.fecha || ""),15,y);
+y += 8;
+
+doc.text("Cliente: " + (parte.cliente || ""),15,y);
+y += 8;
+
+doc.text("Técnico: " + (parte.tecnico || ""),15,y);
+y += 8;
+
+doc.text("Vehículo: " + (parte.vehiculo || ""),15,y);
+y += 12;
+
+doc.text("Trabajo realizado:",15,y);
+y += 7;
+doc.text(doc.splitTextToSize(parte.trabajo || "",180),15,y);
+y += 20;
+
+doc.text("Material utilizado:",15,y);
+y += 7;
+doc.text(doc.splitTextToSize(parte.material || "",180),15,y);
+y += 20;
+
+doc.text("Horas: " + (parte.horas || ""),15,y);
+y += 10;
+
+doc.text("Observaciones:",15,y);
+y += 7;
+doc.text(doc.splitTextToSize(parte.observaciones || "",180),15,y);
+y += 25;
+
+if(parte.fotos && Array.isArray(parte.fotos)){
+
+doc.setFontSize(14);
+doc.text("Fotografías",15,y);
+y += 10;
+
+for(let i=0;i<parte.fotos.length;i++){
+
+if(y > 210){
+doc.addPage();
+y = 20;
+}
+
+try{
+doc.addImage(
+parte.fotos[i],
+"JPEG",
+15,
+y,
+80,
+60
+);
+y += 70;
+}catch(e){}
+
+}
+
+}
+
+if(y > 210){
+doc.addPage();
+y = 20;
+}
+
+doc.setFontSize(14);
+doc.text("Firmas",15,y);
+y += 10;
+
+if(parte.firma_cliente){
+doc.setFontSize(11);
+doc.text("Firma Cliente",15,y);
+doc.addImage(parte.firma_cliente,"PNG",15,y+5,70,30);
+}
+
+if(parte.firma_tecnico){
+doc.setFontSize(11);
+doc.text("Firma Técnico",110,y);
+doc.addImage(parte.firma_tecnico,"PNG",110,y+5,70,30);
 }
 
 }

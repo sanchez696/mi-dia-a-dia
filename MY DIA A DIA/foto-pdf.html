@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foto a PDF</title>
+
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+.preview{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:15px;
+margin-top:15px;
+}
+
+.foto-card{
+background:white;
+border:1px solid #ddd;
+border-radius:12px;
+padding:10px;
+}
+
+.foto-card img{
+width:100%;
+height:160px;
+object-fit:cover;
+border-radius:10px;
+}
+
+.foto-card textarea{
+height:70px;
+margin-top:10px;
+}
+
+.eliminar{
+background:red;
+color:white;
+}
+
+.controles{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:15px;
+}
+
+.valor{
+font-weight:bold;
+margin-left:8px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>📷 Foto → PDF</h1>
+<button class="btn btn-primary" onclick="location.href='index.html'">
+🏠 Inicio
+</button>
+</header>
+
+<div class="app-container">
+
+<div class="card">
+
+<label>Seleccionar fotos de galería</label>
+<input type="file" id="imagenes" accept="image/*" multiple>
+
+<label>Hacer foto con cámara</label>
+<input type="file" id="camara" accept="image/*" capture="environment">
+
+<label>Observaciones generales</label>
+<textarea id="observaciones" placeholder="Escribe observaciones generales del PDF..."></textarea>
+
+</div>
+
+<div class="card">
+
+<h2>💧 Marca de agua</h2>
+
+<label>Texto marca de agua</label>
+<input type="text" id="marcaAgua" value="VIP INSTALACIONES">
+
+<div class="controles">
+
+<div>
+<label>Tamaño</label>
+<input type="range" id="tamanoMarca" min="20" max="80" value="45" oninput="actualizarValores()">
+<span id="valorTamano" class="valor">45</span>
+</div>
+
+<div>
+<label>Transparencia</label>
+<input type="range" id="transparencia" min="0.05" max="0.6" step="0.05" value="0.18" oninput="actualizarValores()">
+<span id="valorTransparencia" class="valor">18%</span>
+</div>
+
+<div>
+<label>Ubicación</label>
+<select id="ubicacionMarca">
+<option value="diagonal">Diagonal centro</option>
+<option value="vertical">Vertical centro</option>
+<option value="horizontal">Horizontal centro</option>
+<option value="superior">Superior</option>
+<option value="inferior">Inferior</option>
+</select>
+</div>
+
+<div>
+<label>Calidad / Compresión</label>
+<select id="calidad">
+<option value="0.9">Alta calidad</option>
+<option value="0.7">Media</option>
+<option value="0.5">Baja</option>
+<option value="0.3">Muy comprimido</option>
+</select>
+</div>
+
+</div>
+
+<button class="btn btn-success" onclick="generarPDF()">
+📄 Generar PDF
+</button>
+
+<button class="btn eliminar" onclick="eliminarTodo()">
+🗑 Eliminar todo
+</button>
+
+</div>
+
+<div class="card">
+<h2>Vista previa</h2>
+<p>Debajo de cada foto puedes escribir una descripción.</p>
+<div id="preview" class="preview"></div>
+</div>
+
+</div>
+
+<script>
+
+let fotos = [];
+
+document.getElementById("imagenes").addEventListener("change", function(e){
+leerFotos(e.target.files);
+});
+
+document.getElementById("camara").addEventListener("change", function(e){
+leerFotos(e.target.files);
+});
+
+function actualizarValores(){
+
+document.getElementById("valorTamano").innerText =
+document.getElementById("tamanoMarca").value;
+
+document.getElementById("valorTransparencia").innerText =
+Math.round(
+parseFloat(document.getElementById("transparencia").value) * 100
+) + "%";
+
+}
+
+actualizarValores();
+
+function leerFotos(files){
+
+for(let i=0;i<files.length;i++){
+
+const reader = new FileReader();
+
+reader.onload = function(e){
+
+comprimirImagen(e.target.result).then(img=>{
+
+fotos.push({
+imagen: img,
+texto: ""
+});
+
+mostrarPreview();
+
+});
+
+};
+
+reader.readAsDataURL(files[i]);
+
+}
+
+}
+
+function mostrarPreview(){
+
+const preview = document.getElementById("preview");
+preview.innerHTML = "";
+
+fotos.forEach((foto,index)=>{
+
+preview.innerHTML += `
+
+<div class="foto-card">
+
+<img src="${foto.imagen}">
+
+<label>Texto debajo de esta foto</label>
+
+<textarea
+oninput="actualizarTexto(${index}, this.value)"
+placeholder="Ejemplo: Instalación finalizada, fuga reparada, material sustituido...">${foto.texto || ""}</textarea>
+
+<button class="eliminar" onclick="eliminarFoto(${index})">
+Eliminar foto
+</button>
+
+</div>
+
+`;
+
+});
+
+}
+
+function actualizarTexto(index,texto){
+fotos[index].texto = texto;
+}
+
+function eliminarFoto(index){
+fotos.splice(index,1);
+mostrarPreview();
+}
+
+function eliminarTodo(){
+
+if(confirm("¿Eliminar todas las fotos?")){
+fotos = [];
+mostrarPreview();
+}
+
+}
+
+function comprimirImagen(base64){
+
+return new Promise(resolve=>{
+
+const img = new Image();
+
+img.onload = function(){
+
+const canvas = document.createElement("canvas");
+const ctx = canvas.getContext("2d");
+
+const maxWidth = 1000;
+const scale = Math.min(1,maxWidth / img.width);
+
+canvas.width = img.width * scale;
+canvas.height = img.height * scale;
+
+ctx.drawImage(img,0,0,canvas.width,canvas.height);
+
+const calidad =
+parseFloat(document.getElementById("calidad").value);
+
+resolve(
+canvas.toDataURL("image/jpeg",calidad)
+);
+
+};
+
+img.src = base64;
+
+});
+
+}
+
+function fechaHoy(){
+
+const hoy = new Date();
+
+return hoy.toLocaleDateString("es-ES",{
+day:"2-digit",
+month:"2-digit",
+year:"numeric"
+});
+
+}
+
+function ponerCabecera(doc){
+
+doc.setFontSize(16);
+doc.text("VIP INSTALACIONES",20,15);
+
+doc.setFontSize(11);
+doc.text("Fecha: " + fechaHoy(),20,23);
+
+}
+
+function ponerMarcaAgua(doc){
+
+const texto =
+document.getElementById("marcaAgua").value || "VIP INSTALACIONES";
+
+const tamano =
+parseInt(document.getElementById("tamanoMarca").value);
+
+const transparencia =
+parseFloat(document.getElementById("transparencia").value);
+
+const ubicacion =
+document.getElementById("ubicacionMarca").value;
+
+doc.saveGraphicsState();
+
+doc.setTextColor(150,150,150);
+doc.setFontSize(tamano);
+doc.setGState(
+new doc.GState({opacity:transparencia})
+);
+
+if(ubicacion === "diagonal"){
+
+doc.text(texto,105,150,{
+angle:45,
+align:"center"
+});
+
+}
+
+if(ubicacion === "vertical"){
+
+doc.text(texto,105,150,{
+angle:90,
+align:"center"
+});
+
+}
+
+if(ubicacion === "horizontal"){
+
+doc.text(texto,105,150,{
+angle:0,
+align:"center"
+});
+
+}
+
+if(ubicacion === "superior"){
+
+doc.text(texto,105,60,{
+angle:0,
+align:"center"
+});
+
+}
+
+if(ubicacion === "inferior"){
+
+doc.text(texto,105,260,{
+angle:0,
+align:"center"
+});
+
+}
+
+doc.restoreGraphicsState();
+
+}
+
+function generarPDF(){
+
+if(fotos.length === 0){
+alert("Selecciona al menos una foto");
+return;
+}
+
+const { jsPDF } = window.jspdf;
+
+const doc = new jsPDF();
+
+const observaciones =
+document.getElementById("observaciones").value;
+
+fotos.forEach((foto,index)=>{
+
+if(index > 0){
+doc.addPage();
+}
+
+ponerCabecera(doc);
+ponerMarcaAgua(doc);
+
+doc.addImage(
+foto.imagen,
+"JPEG",
+10,
+35,
+190,
+165
+);
+
+let y = 210;
+
+if(foto.texto){
+
+doc.setFontSize(11);
+
+doc.text(
+doc.splitTextToSize(foto.texto,180),
+15,
+y
+);
+
+}
+
+});
+
+if(observaciones){
+
+doc.addPage();
+
+ponerCabecera(doc);
+ponerMarcaAgua(doc);
+
+doc.setFontSize(16);
+doc.text("Observaciones generales",20,40);
+
+doc.setFontSize(11);
+doc.text(
+doc.splitTextToSize(observaciones,180),
+20,
+55
+);
+
+}
+
+doc.save(
+"Fotos_VIP_" + fechaHoy().replaceAll("/","-") + ".pdf"
+);
+
+}
+
+</script>
+
+</body>
+</html>

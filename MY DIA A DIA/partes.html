@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nuevo Parte</title>
 
-<title>Parte de Trabajo</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-
 body{
 font-family:Arial,sans-serif;
 background:#f5f5f5;
@@ -15,9 +15,9 @@ margin:0;
 }
 
 header{
-background:#0F4C81;
+background:#213d6b;
 color:white;
-padding:15px;
+padding:20px;
 text-align:center;
 }
 
@@ -30,9 +30,9 @@ padding:20px;
 .card{
 background:white;
 padding:20px;
-border-radius:10px;
+border-radius:15px;
 margin-bottom:20px;
-box-shadow:0 2px 8px rgba(0,0,0,.1);
+box-shadow:0 3px 12px rgba(0,0,0,.1);
 }
 
 label{
@@ -42,13 +42,13 @@ margin-top:10px;
 }
 
 input,
-textarea,
-select{
+textarea{
 width:100%;
 padding:10px;
 margin-top:5px;
 border:1px solid #ccc;
-border-radius:5px;
+border-radius:8px;
+box-sizing:border-box;
 }
 
 textarea{
@@ -56,11 +56,18 @@ height:100px;
 }
 
 button{
-padding:12px 20px;
+padding:12px 18px;
 border:none;
-border-radius:5px;
+border-radius:10px;
 cursor:pointer;
 margin-top:15px;
+margin-right:8px;
+font-weight:bold;
+}
+
+.inicio{
+background:#213d6b;
+color:white;
 }
 
 .guardar{
@@ -68,37 +75,45 @@ background:green;
 color:white;
 }
 
-.inicio{
-background:#0F4C81;
+.borrar{
+background:red;
 color:white;
 }
 
-canvas{
-border:1px solid #ccc;
+.firma{
+border:2px solid #ccc;
 background:white;
 width:100%;
-height:200px;
+height:220px;
+border-radius:12px;
 touch-action:none;
 }
 
-</style>
+.preview{
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+margin-top:10px;
+}
 
+.preview img{
+width:120px;
+height:120px;
+object-fit:cover;
+border-radius:10px;
+border:1px solid #ddd;
+}
+</style>
 </head>
 
 <body>
 
 <header>
+<h1>📄 Nuevo Parte</h1>
 
-<h1>📄 Parte de Trabajo</h1>
-
-<button
-class="inicio"
-onclick="location.href='index.html'">
-
+<button class="inicio" onclick="location.href='index.html'">
 🏠 Inicio
-
 </button>
-
 </header>
 
 <div class="container">
@@ -106,44 +121,33 @@ onclick="location.href='index.html'">
 <div class="card">
 
 <label>Fecha</label>
-<input
-type="date"
-id="fecha">
+<input type="date" id="fecha">
 
 <label>Cliente</label>
-<input
-type="text"
-id="cliente">
+<input type="text" id="cliente">
 
 <label>Técnico</label>
-<input
-type="text"
-id="tecnico">
+<input type="text" id="tecnico">
 
 <label>Vehículo</label>
-<input
-type="text"
-id="vehiculo">
+<input type="text" id="vehiculo">
 
 <label>Trabajo realizado</label>
-<textarea
-id="trabajo">
-</textarea>
+<textarea id="trabajo"></textarea>
 
 <label>Material utilizado</label>
-<textarea
-id="material">
-</textarea>
+<textarea id="material"></textarea>
 
 <label>Horas empleadas</label>
-<input
-type="number"
-id="horas">
+<input type="number" id="horas">
 
 <label>Observaciones</label>
-<textarea
-id="observaciones">
-</textarea>
+<textarea id="observaciones"></textarea>
+
+<label>📷 Fotos del trabajo</label>
+<input type="file" id="fotos" accept="image/*" multiple>
+
+<div id="previewFotos" class="preview"></div>
 
 </div>
 
@@ -151,28 +155,34 @@ id="observaciones">
 
 <h3>✍ Firma Cliente</h3>
 
-<canvas
-id="firma"
-width="800"
-height="200">
-</canvas>
+<canvas id="firmaCliente" class="firma" width="800" height="220"></canvas>
 
-<br>
-
-<button onclick="limpiarFirma()">
-Borrar Firma
+<button class="borrar" onclick="limpiarFirma('firmaCliente')">
+Borrar firma cliente
 </button>
 
 </div>
 
 <div class="card">
 
-<button
-class="guardar"
-onclick="guardarParte()">
+<h3>✍ Firma Técnico</h3>
 
+<div id="firmaTecnicoContainer">
+
+<canvas id="firmaTecnico" class="firma" width="800" height="220"></canvas>
+
+</div>
+
+<button class="borrar" onclick="limpiarFirma('firmaTecnico')">
+Borrar firma técnico
+</button>
+
+</div>
+
+<div class="card">
+
+<button class="guardar" onclick="guardarParte()">
 💾 Guardar Parte
-
 </button>
 
 </div>
@@ -181,67 +191,237 @@ onclick="guardarParte()">
 
 <script>
 
-document
-.getElementById("fecha")
-.valueAsDate =
-new Date();
+const SUPABASE_URL =
+"https://evhcygynfseonzlkqdsp.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_aB-_vkxGV9e7BujEy0NEfQ_lMfOlEMS";
+
+const sb =
+window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+document.getElementById("fecha").valueAsDate = new Date();
+
+document.getElementById("tecnico").value =
+localStorage.getItem("nombreTecnico") || "";
+
+let fotosBase64 = [];
+
+document.getElementById("fotos").addEventListener("change", async function(e){
+
+fotosBase64 = [];
+
+const archivos =
+Array.from(e.target.files);
+
+for(const archivo of archivos){
+
+const foto =
+await convertirFoto(archivo);
+
+fotosBase64.push(foto);
+
+}
+
+mostrarFotos();
+
+});
+
+function mostrarFotos(){
+
+const preview =
+document.getElementById("previewFotos");
+
+preview.innerHTML = "";
+
+fotosBase64.forEach(foto=>{
+
+preview.innerHTML +=
+`<img src="${foto}">`;
+
+});
+
+}
+
+function convertirFoto(file){
+
+return new Promise(resolve=>{
+
+const reader =
+new FileReader();
+
+reader.onload = function(e){
+
+const img =
+new Image();
+
+img.onload = function(){
 
 const canvas =
-document.getElementById("firma");
+document.createElement("canvas");
 
 const ctx =
 canvas.getContext("2d");
 
-let dibujando=false;
+const maxWidth = 900;
 
-canvas.addEventListener(
-"mousedown",
-iniciar
+const scale =
+Math.min(1,maxWidth / img.width);
+
+canvas.width =
+img.width * scale;
+
+canvas.height =
+img.height * scale;
+
+ctx.drawImage(
+img,
+0,
+0,
+canvas.width,
+canvas.height
 );
 
-canvas.addEventListener(
-"mousemove",
-dibujar
+resolve(
+canvas.toDataURL("image/jpeg",0.45)
 );
 
-canvas.addEventListener(
-"mouseup",
-parar
-);
+};
 
-function iniciar(e){
+img.src =
+e.target.result;
 
-dibujando=true;
+};
+
+reader.readAsDataURL(file);
+
+});
+
+}
+
+function activarFirma(id){
+
+const canvas =
+document.getElementById(id);
+
+if(!canvas) return;
+
+const ctx =
+canvas.getContext("2d");
+
+ctx.lineWidth = 4;
+ctx.lineCap = "round";
+ctx.strokeStyle = "#000";
+
+let pintando = false;
+
+function posicion(e){
+
+const rect =
+canvas.getBoundingClientRect();
+
+const p =
+e.touches ? e.touches[0] : e;
+
+return {
+x:(p.clientX - rect.left) * (canvas.width / rect.width),
+y:(p.clientY - rect.top) * (canvas.height / rect.height)
+};
+
+}
+
+function empezar(e){
+
+e.preventDefault();
+
+pintando = true;
+
+const pos =
+posicion(e);
 
 ctx.beginPath();
 
 ctx.moveTo(
-e.offsetX,
-e.offsetY
+pos.x,
+pos.y
 );
 
 }
 
-function dibujar(e){
+function mover(e){
 
-if(!dibujando) return;
+if(!pintando) return;
+
+e.preventDefault();
+
+const pos =
+posicion(e);
 
 ctx.lineTo(
-e.offsetX,
-e.offsetY
+pos.x,
+pos.y
 );
 
 ctx.stroke();
 
 }
 
-function parar(){
+function terminar(){
 
-dibujando=false;
+pintando = false;
 
 }
 
-function limpiarFirma(){
+canvas.addEventListener("mousedown",empezar);
+canvas.addEventListener("mousemove",mover);
+canvas.addEventListener("mouseup",terminar);
+canvas.addEventListener("mouseleave",terminar);
+
+canvas.addEventListener("touchstart",empezar,{passive:false});
+canvas.addEventListener("touchmove",mover,{passive:false});
+canvas.addEventListener("touchend",terminar);
+
+}
+
+activarFirma("firmaCliente");
+activarFirma("firmaTecnico");
+
+const firmaGuardada =
+localStorage.getItem("firmaTecnico");
+
+if(
+firmaGuardada &&
+firmaGuardada !== ""
+){
+
+document.getElementById("firmaTecnicoContainer").innerHTML = `
+<img
+id="firmaTecnicoImg"
+src="${firmaGuardada}"
+style="
+width:100%;
+max-height:220px;
+background:white;
+border:2px solid #ccc;
+border-radius:12px;
+object-fit:contain;
+">
+`;
+
+}
+
+function limpiarFirma(id){
+
+const canvas =
+document.getElementById(id);
+
+if(canvas){
+
+const ctx =
+canvas.getContext("2d");
 
 ctx.clearRect(
 0,
@@ -252,65 +432,116 @@ canvas.height
 
 }
 
-function guardarParte(){
+if(id === "firmaTecnico"){
 
-let partes =
+localStorage.removeItem("firmaTecnico");
+
+document.getElementById("firmaTecnicoContainer").innerHTML = `
+<canvas id="firmaTecnico" class="firma" width="800" height="220"></canvas>
+`;
+
+activarFirma("firmaTecnico");
+
+}
+
+}
+
+async function guardarParte(){
+
+alert("Guardando parte...");
+
+let firmaTecnicoFinal = "";
+
+const firmaTecnicoCanvas =
+document.getElementById("firmaTecnico");
+
+const firmaTecnicoImg =
+document.getElementById("firmaTecnicoImg");
+
+if(firmaTecnicoImg){
+
+firmaTecnicoFinal =
+firmaTecnicoImg.src;
+
+}else if(firmaTecnicoCanvas){
+
+firmaTecnicoFinal =
+firmaTecnicoCanvas.toDataURL("image/png");
+
+}
+
+const parte = {
+
+numero:
+"PT-" + Date.now(),
+
+fecha:
+document.getElementById("fecha").value,
+
+cliente:
+document.getElementById("cliente").value,
+
+tecnico:
+document.getElementById("tecnico").value,
+
+vehiculo:
+document.getElementById("vehiculo").value,
+
+trabajo:
+document.getElementById("trabajo").value,
+
+material:
+document.getElementById("material").value,
+
+horas:
+document.getElementById("horas").value,
+
+observaciones:
+document.getElementById("observaciones").value,
+
+firma_cliente:
+document.getElementById("firmaCliente").toDataURL("image/png"),
+
+firma_tecnico:
+firmaTecnicoFinal,
+
+fotos:
+fotosBase64
+
+};
+
+let partesLocales =
 JSON.parse(
 localStorage.getItem("partes")
 ) || [];
 
-let nuevoParte = {
-
-fecha:
-document.getElementById(
-"fecha"
-).value,
-
-cliente:
-document.getElementById(
-"cliente"
-).value,
-
-tecnico:
-document.getElementById(
-"tecnico"
-).value,
-
-vehiculo:
-document.getElementById(
-"vehiculo"
-).value,
-
-trabajo:
-document.getElementById(
-"trabajo"
-).value,
-
-material:
-document.getElementById(
-"material"
-).value,
-
-horas:
-document.getElementById(
-"horas"
-).value,
-
-observaciones:
-document.getElementById(
-"observaciones"
-).value
-
-};
-
-partes.push(
-nuevoParte
-);
+partesLocales.push(parte);
 
 localStorage.setItem(
 "partes",
-JSON.stringify(partes)
+JSON.stringify(partesLocales)
 );
+
+try{
+
+const { error } =
+await sb
+.from("partes")
+.insert([parte]);
+
+if(error){
+
+alert(
+"Guardado en el dispositivo. Error Supabase: " +
+error.message
+);
+
+location.href =
+"partes-listado.html";
+
+return;
+
+}
 
 alert(
 "Parte guardado correctamente"
@@ -318,6 +549,18 @@ alert(
 
 location.href =
 "partes-listado.html";
+
+}catch(err){
+
+alert(
+"Guardado en el dispositivo. Error conexión: " +
+err.message
+);
+
+location.href =
+"partes-listado.html";
+
+}
 
 }
 

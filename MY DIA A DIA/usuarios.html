@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Usuarios - Mi Día a Día PRO</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body{
+font-family:Arial,sans-serif;
+background:#f5f5f5;
+margin:0;
+}
+
+header{
+background:#213d6b;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.container{
+max-width:1100px;
+margin:auto;
+padding:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:15px;
+margin-bottom:20px;
+box-shadow:0 3px 12px rgba(0,0,0,.1);
+}
+
+label{
+font-weight:bold;
+display:block;
+margin-top:10px;
+}
+
+input,select{
+width:100%;
+padding:10px;
+margin-top:5px;
+border:1px solid #ccc;
+border-radius:8px;
+box-sizing:border-box;
+}
+
+button{
+padding:10px 15px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin-top:12px;
+margin-right:8px;
+}
+
+.guardar{
+background:green;
+color:white;
+}
+
+.eliminar{
+background:red;
+color:white;
+}
+
+.inicio{
+background:#213d6b;
+color:white;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+background:white;
+}
+
+th{
+background:#213d6b;
+color:white;
+padding:10px;
+}
+
+td{
+padding:10px;
+border-bottom:1px solid #ddd;
+text-align:center;
+}
+
+canvas{
+border:1px solid #ccc;
+width:100%;
+height:180px;
+background:white;
+touch-action:none;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>👥 Gestión de Usuarios</h1>
+
+<button class="inicio" onclick="location.href='index.html'">
+🏠 Inicio
+</button>
+</header>
+
+<div class="container">
+
+<div class="card">
+
+<h2>Nuevo usuario</h2>
+
+<label>Usuario</label>
+<input type="text" id="usuario">
+
+<label>Contraseña</label>
+<input type="text" id="password">
+
+<label>Nombre</label>
+<input type="text" id="nombre">
+
+<label>Rol</label>
+<select id="rol">
+<option value="tecnico">Técnico</option>
+<option value="administrador">Administrador</option>
+<option value="oficina">Oficina</option>
+</select>
+
+<label>Email</label>
+<input type="text" id="email">
+
+<label>Teléfono</label>
+<input type="text" id="telefono">
+
+<h3>Firma del técnico</h3>
+<canvas id="firma" width="800" height="180"></canvas>
+
+<br>
+
+<button onclick="limpiarFirma()">
+Borrar firma
+</button>
+
+<br>
+
+<button class="guardar" onclick="guardarUsuario()">
+💾 Guardar Usuario
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>Usuarios registrados</h2>
+
+<table>
+<thead>
+<tr>
+<th>Usuario</th>
+<th>Nombre</th>
+<th>Rol</th>
+<th>Email</th>
+<th>Teléfono</th>
+<th>Acción</th>
+</tr>
+</thead>
+
+<tbody id="tablaUsuarios"></tbody>
+</table>
+
+</div>
+
+</div>
+
+<script>
+
+const SUPABASE_URL =
+"https://evhcygynfseonzlkqdsp.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_aB-_vkxGV9e7BujEy0NEfQ_lMfOlEMS";
+
+const sb =
+window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+const canvas =
+document.getElementById("firma");
+
+const ctx =
+canvas.getContext("2d");
+
+let pintando = false;
+
+ctx.lineWidth = 4;
+ctx.lineCap = "round";
+
+function posicion(e){
+
+const rect =
+canvas.getBoundingClientRect();
+
+const p =
+e.touches ? e.touches[0] : e;
+
+return {
+x:(p.clientX - rect.left) * (canvas.width / rect.width),
+y:(p.clientY - rect.top) * (canvas.height / rect.height)
+};
+
+}
+
+function empezar(e){
+
+e.preventDefault();
+
+pintando = true;
+
+const pos =
+posicion(e);
+
+ctx.beginPath();
+ctx.moveTo(pos.x,pos.y);
+
+}
+
+function mover(e){
+
+if(!pintando) return;
+
+e.preventDefault();
+
+const pos =
+posicion(e);
+
+ctx.lineTo(pos.x,pos.y);
+ctx.stroke();
+
+}
+
+function terminar(){
+
+pintando = false;
+
+}
+
+canvas.addEventListener("mousedown",empezar);
+canvas.addEventListener("mousemove",mover);
+canvas.addEventListener("mouseup",terminar);
+canvas.addEventListener("mouseleave",terminar);
+
+canvas.addEventListener("touchstart",empezar,{passive:false});
+canvas.addEventListener("touchmove",mover,{passive:false});
+canvas.addEventListener("touchend",terminar);
+
+function limpiarFirma(){
+
+ctx.clearRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+}
+
+async function guardarUsuario(){
+
+const usuario = {
+usuario:document.getElementById("usuario").value,
+password:document.getElementById("password").value,
+nombre:document.getElementById("nombre").value,
+rol:document.getElementById("rol").value,
+email:document.getElementById("email").value,
+telefono:document.getElementById("telefono").value,
+activo:true,
+firma:canvas.toDataURL("image/png")
+};
+
+const { error } =
+await sb
+.from("usuarios")
+.insert([usuario]);
+
+if(error){
+
+alert(
+"Error guardando usuario: " +
+error.message
+);
+
+return;
+
+}
+
+alert("Usuario guardado correctamente");
+
+location.reload();
+
+}
+
+async function cargarUsuarios(){
+
+const { data, error } =
+await sb
+.from("usuarios")
+.select("*")
+.order("id",{ascending:true});
+
+if(error){
+
+alert(
+"Error cargando usuarios: " +
+error.message
+);
+
+return;
+
+}
+
+const tabla =
+document.getElementById("tablaUsuarios");
+
+tabla.innerHTML = "";
+
+data.forEach(u=>{
+
+tabla.innerHTML += `
+
+<tr>
+<td>${u.usuario || ""}</td>
+<td>${u.nombre || ""}</td>
+<td>${u.rol || ""}</td>
+<td>${u.email || ""}</td>
+<td>${u.telefono || ""}</td>
+<td>
+<button class="eliminar" onclick="eliminarUsuario(${u.id})">
+Eliminar
+</button>
+</td>
+</tr>
+
+`;
+
+});
+
+}
+
+async function eliminarUsuario(id){
+
+if(!confirm("¿Eliminar este usuario?")) return;
+
+const { error } =
+await sb
+.from("usuarios")
+.delete()
+.eq("id",id);
+
+if(error){
+
+alert(
+"Error eliminando: " +
+error.message
+);
+
+return;
+
+}
+
+alert("Usuario eliminado");
+
+cargarUsuarios();
+
+}
+
+cargarUsuarios();
+
+</script>
+
+</body>
+</html>

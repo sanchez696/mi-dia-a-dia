@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opciones - Mi Día a Día PRO</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+<style>
+.admin-box{
+max-width:700px;
+margin:auto;
+}
+
+.color-row{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:15px;
+}
+
+.preview{
+padding:20px;
+border-radius:15px;
+background:white;
+margin-top:20px;
+box-shadow:0 3px 10px rgba(0,0,0,.1);
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>⚙️ Opciones</h1>
+<button class="btn btn-primary" onclick="location.href='index.html'">
+🏠 Inicio
+</button>
+</header>
+
+<div class="app-container">
+
+<div class="card admin-box" id="loginAdmin">
+
+<h2>🔐 Acceso Administrador</h2>
+
+<label>Contraseña de administrador</label>
+<input type="password" id="claveAdmin" placeholder="Introduce contraseña">
+
+<button class="btn btn-primary" onclick="entrarOpciones()">
+Entrar
+</button>
+
+<p id="error" style="color:red;margin-top:10px;"></p>
+
+</div>
+
+<div class="card admin-box" id="panelOpciones" style="display:none;">
+
+<h2>🏢 Datos de Empresa</h2>
+
+<label>Nombre empresa</label>
+<input type="text" id="empresa">
+
+<label>Teléfono</label>
+<input type="text" id="telefono">
+
+<label>Email</label>
+<input type="text" id="email">
+
+<label>Dirección</label>
+<input type="text" id="direccion">
+
+<h2>🎨 Tema</h2>
+
+<label>Estilo</label>
+<select id="tema">
+<option value="clasico">Clásico</option>
+<option value="oscuro">Oscuro</option>
+<option value="futurista">Futurista</option>
+</select>
+
+<div class="color-row">
+
+<div>
+<label>Color principal</label>
+<input type="color" id="colorPrincipal">
+</div>
+
+<div>
+<label>Color secundario</label>
+<input type="color" id="colorSecundario">
+</div>
+
+</div>
+
+<button class="btn btn-success" onclick="guardarOpciones()">
+💾 Guardar Opciones
+</button>
+
+<button class="btn btn-danger" onclick="restaurarOpciones()">
+♻️ Restaurar
+</button>
+
+<div class="preview">
+<h3>Vista previa</h3>
+<p>Estos datos se usarán en la aplicación y en futuros PDF.</p>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const CLAVE_ADMIN = "1234";
+
+function entrarOpciones(){
+
+let clave =
+document.getElementById("claveAdmin").value;
+
+if(clave === CLAVE_ADMIN){
+
+document.getElementById("loginAdmin").style.display="none";
+document.getElementById("panelOpciones").style.display="block";
+
+cargarOpciones();
+
+}else{
+
+document.getElementById("error").innerText =
+"Contraseña incorrecta";
+
+}
+
+}
+
+function cargarOpciones(){
+
+let opciones =
+JSON.parse(localStorage.getItem("opcionesApp")) || {
+empresa:"VIP INSTALACIONES",
+telefono:"673 08 67 10",
+email:"hola@vipinstalaciones.es",
+direccion:"Calle Ferrers 6",
+tema:"clasico",
+colorPrincipal:"#0F4C81",
+colorSecundario:"#00AEEF"
+};
+
+document.getElementById("empresa").value =
+opciones.empresa;
+
+document.getElementById("telefono").value =
+opciones.telefono;
+
+document.getElementById("email").value =
+opciones.email;
+
+document.getElementById("direccion").value =
+opciones.direccion;
+
+document.getElementById("tema").value =
+opciones.tema;
+
+document.getElementById("colorPrincipal").value =
+opciones.colorPrincipal;
+
+document.getElementById("colorSecundario").value =
+opciones.colorSecundario;
+
+}
+
+function guardarOpciones(){
+
+let opciones = {
+
+empresa:
+document.getElementById("empresa").value,
+
+telefono:
+document.getElementById("telefono").value,
+
+email:
+document.getElementById("email").value,
+
+direccion:
+document.getElementById("direccion").value,
+
+tema:
+document.getElementById("tema").value,
+
+colorPrincipal:
+document.getElementById("colorPrincipal").value,
+
+colorSecundario:
+document.getElementById("colorSecundario").value
+
+};
+
+localStorage.setItem(
+"opcionesApp",
+JSON.stringify(opciones)
+);
+
+alert("Opciones guardadas correctamente");
+
+}
+
+function restaurarOpciones(){
+
+localStorage.removeItem("opcionesApp");
+
+alert("Opciones restauradas");
+
+location.reload();
+
+}
+
+</script>
+
+</body>
+</html>

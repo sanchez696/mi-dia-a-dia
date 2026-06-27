@@ -1,295 +1,273 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mi Agenda</title>
+<title>Agenda</title>
 
 <style>
 
 body{
-    font-family:Arial, sans-serif;
-    margin:0;
-    background:#f5f5f5;
+font-family:Arial,sans-serif;
+background:#f5f5f5;
+margin:0;
 }
 
 header{
-    background:#0F4C81;
-    color:white;
-    text-align:center;
-    padding:15px;
+background:#0F4C81;
+color:white;
+padding:15px;
+text-align:center;
+}
+
+.container{
+max-width:1000px;
+margin:auto;
+padding:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:10px;
+margin-bottom:20px;
+box-shadow:0 2px 8px rgba(0,0,0,.1);
+}
+
+label{
+font-weight:bold;
+display:block;
+margin-top:10px;
+}
+
+input,
+textarea{
+width:100%;
+padding:10px;
+margin-top:5px;
+border:1px solid #ccc;
+border-radius:5px;
+box-sizing:border-box;
+}
+
+textarea{
+height:100px;
 }
 
 button{
-    padding:10px 15px;
-    border:none;
-    border-radius:5px;
-    cursor:pointer;
+padding:12px 20px;
+border:none;
+border-radius:5px;
+cursor:pointer;
+margin-top:15px;
 }
 
-.btn-inicio{
-    background:white;
-    color:#0F4C81;
-    margin-top:10px;
+.guardar{
+background:green;
+color:white;
 }
 
-.agenda{
-    display:grid;
-    grid-template-columns:80px repeat(5,1fr);
-    gap:1px;
-    background:#ccc;
-    margin:10px;
-}
-
-.celda{
-    background:white;
-    min-height:80px;
-    padding:5px;
-    font-size:12px;
-}
-
-.hora{
-    background:#e6e6e6;
-    text-align:center;
-    font-weight:bold;
-}
-
-.dia{
-    background:#0F4C81;
-    color:white;
-    text-align:center;
-    font-weight:bold;
-}
-
-.trabajo{
-    color:white;
-    padding:5px;
-    border-radius:5px;
-    margin-top:5px;
-    font-size:11px;
+.inicio{
+background:#0F4C81;
+color:white;
 }
 
 </style>
+
 </head>
 
 <body>
 
 <header>
 
-<h1>📅 Mi Agenda</h1>
+<h1>📅 Agenda</h1>
 
 <button
-class="btn-inicio"
+class="inicio"
 onclick="location.href='index.html'">
+
 🏠 Inicio
+
 </button>
 
 </header>
 
-<div id="agenda" class="agenda"></div>
+<div class="container">
+
+<div class="card">
+
+<label>Fecha</label> <input type="date" id="fecha">
+
+<label>Hora</label> <input type="time" id="hora">
+
+<label>Cliente</label> <input type="text" id="cliente">
+
+<label>Teléfono</label> <input type="text" id="telefono">
+
+<label>Dirección</label> <input type="text" id="direccion">
+
+<label>Trabajo a realizar</label>
+
+<textarea id="trabajo"></textarea>
+
+<label>Observaciones</label>
+
+<textarea id="observaciones"></textarea>
+
+<button
+class="guardar"
+onclick="guardarCita()">
+
+💾 Guardar Cita
+
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>📋 Próximas Citas</h2>
+
+<div id="listado"></div>
+
+</div>
+
+</div>
 
 <script>
 
-const dias = [
-"Lunes",
-"Martes",
-"Miércoles",
-"Jueves",
-"Viernes"
-];
+document.getElementById("fecha").valueAsDate = new Date();
 
-const horas = [
-"08:00",
-"09:00",
-"10:00",
-"11:00",
-"12:00",
-"13:00",
-"14:00",
-"15:00",
-"16:00",
-"17:00",
-"18:00"
-];
+let citas =
+JSON.parse(
+localStorage.getItem("agenda")
+) || [];
 
-let trabajos =
-JSON.parse(localStorage.getItem("agenda"))
-|| {};
+function guardarCita(){
 
-const agenda =
-document.getElementById("agenda");
+let cita = {
 
-agenda.innerHTML +=
-'<div class="celda"></div>';
+fecha:
+document.getElementById("fecha").value,
 
-dias.forEach(dia=>{
-
-agenda.innerHTML +=
-`<div class="celda dia">${dia}</div>`;
-
-});
-
-horas.forEach(hora=>{
-
-agenda.innerHTML +=
-`<div class="celda hora">${hora}</div>`;
-
-dias.forEach(dia=>{
-
-agenda.innerHTML +=
-`
-<div
-class="celda"
-onclick="crearTrabajo('${dia}','${hora}')"
-id="${dia}_${hora}">
-</div>
-`;
-
-});
-
-});
-
-function crearTrabajo(dia,hora){
-
-let clientes =
-JSON.parse(localStorage.getItem("clientes"))
-|| [];
-
-if(clientes.length===0){
-
-alert(
-"Primero debes crear un cliente."
-);
-
-return;
-
-}
-
-let listaClientes =
-clientes
-.map((c,i)=>
-`${i+1} - ${c.nombre}`
-)
-.join("\n");
-
-let seleccion =
-prompt(
-"Selecciona un cliente:\n\n" +
-listaClientes
-);
-
-if(!seleccion) return;
-
-let cliente =
-clientes[seleccion-1];
-
-if(!cliente){
-
-alert("Cliente no válido");
-return;
-
-}
-
-let descripcion =
-prompt(
-"Descripción del trabajo"
-);
-
-if(!descripcion) return;
-
-let estado =
-prompt(
-"Estado:\npendiente\ncurso\nurgente\nfinalizado"
-);
-
-if(!estado)
-estado = "pendiente";
-
-let clave =
-dia + "_" + hora;
-
-trabajos[clave] = {
+hora:
+document.getElementById("hora").value,
 
 cliente:
-cliente.nombre,
+document.getElementById("cliente").value,
 
 telefono:
-cliente.telefono,
+document.getElementById("telefono").value,
 
 direccion:
-cliente.direccion,
+document.getElementById("direccion").value,
 
-descripcion:
-descripcion,
+trabajo:
+document.getElementById("trabajo").value,
 
-estado:
-estado
+observaciones:
+document.getElementById("observaciones").value
 
 };
 
+citas.push(cita);
+
 localStorage.setItem(
 "agenda",
-JSON.stringify(trabajos)
+JSON.stringify(citas)
 );
 
-mostrarAgenda();
+alert("Cita guardada correctamente");
+
+mostrarCitas();
+
+document.getElementById("cliente").value="";
+document.getElementById("telefono").value="";
+document.getElementById("direccion").value="";
+document.getElementById("trabajo").value="";
+document.getElementById("observaciones").value="";
 
 }
 
-function mostrarAgenda(){
+function mostrarCitas(){
 
-for(let clave in trabajos){
+const listado =
+document.getElementById("listado");
 
-let trabajo =
-trabajos[clave];
+if(citas.length===0){
 
-let color =
-"#00AEEF";
+listado.innerHTML =
+"<p>No hay citas guardadas.</p>";
 
-if(
-trabajo.estado === "urgente"
-)
-color = "red";
+return;
 
-if(
-trabajo.estado === "curso"
-)
-color = "orange";
+}
 
-if(
-trabajo.estado === "finalizado"
-)
-color = "green";
+listado.innerHTML="";
 
-let celda =
-document.getElementById(clave);
+citas.forEach((cita,index)=>{
 
-if(celda){
+listado.innerHTML += `
 
-celda.innerHTML =
-`
-<div
-class="trabajo"
-style="background:${color}">
+<div style="
+border:1px solid #ddd;
+padding:15px;
+margin-bottom:10px;
+border-radius:8px;
+">
 
-<strong>
-${trabajo.cliente}
-</strong>
+<p><strong>Fecha:</strong> ${cita.fecha}</p>
 
-<br>
+<p><strong>Hora:</strong> ${cita.hora}</p>
 
-${trabajo.descripcion}
+<p><strong>Cliente:</strong> ${cita.cliente}</p>
+
+<p><strong>Teléfono:</strong> ${cita.telefono}</p>
+
+<p><strong>Dirección:</strong> ${cita.direccion}</p>
+
+<p><strong>Trabajo:</strong> ${cita.trabajo}</p>
+
+<p><strong>Observaciones:</strong> ${cita.observaciones}</p>
+
+<button
+onclick="eliminarCita(${index})"
+style="
+background:red;
+color:white;
+">
+
+🗑 Eliminar
+
+</button>
 
 </div>
+
 `;
 
+});
+
 }
+
+function eliminarCita(index){
+
+if(confirm("¿Eliminar esta cita?")){
+
+citas.splice(index,1);
+
+localStorage.setItem(
+"agenda",
+JSON.stringify(citas)
+);
+
+mostrarCitas();
 
 }
 
 }
 
-mostrarAgenda();
+mostrarCitas();
 
 </script>
 
